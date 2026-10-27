@@ -1,0 +1,1050 @@
+@import 'tailwindcss';
+@import './shared/styles/tokens.css';
+
+/* ════════════════════════════════════════════════
+   Tailwind v4 @theme — genera utilidades desde los
+   tokens de tokens.css (fuente única de colores).
+   bg-surface, text-fg-muted, border-line, bg-accent…
+   ════════════════════════════════════════════════ */
+@theme inline {
+  /* ── Colores → var(token) ── */
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-surface-2: var(--bg-surface-2);
+  --color-surface-3: var(--bg-surface-3);
+  --color-accent: var(--interactive-primary);
+  --color-accent-dim: var(--interactive-primary-dim);
+  --color-accent-fg: var(--interactive-primary-fg);
+  --color-hover: var(--interactive-hover);
+  --color-fg: var(--text-primary);
+  --color-fg-muted: var(--text-secondary);
+  --color-fg-subtle: var(--text-tertiary);
+  --color-fg-inverse: var(--text-inverse);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  --color-line: var(--border-subtle);
+  --color-line-strong: var(--border-default);
+  --color-line-accent: var(--border-accent);
+  /* Para límites de CONTROLES, que WCAG 1.4.11 obliga a 3:1. `line-strong`
+     no llega (1,75:1 sobre el canvas) y no debe subir: lo usan también
+     separadores decorativos, que no tienen por qué gritar. */
+  --color-line-interactive: var(--border-interactive);
+}
+
+@theme {
+  /* ── Escala de espaciado: rejilla de 4px, igual que --space-* de tokens.css.
+     Sin esto Tailwind usa su default de 0.25rem que, con :root a 15px, da
+     3.75px por unidad: `p-4` salía 15px en vez de los 16px que dice el token, y
+     —lo importante— `h-11`/`min-h-11` daban 41.25px, por debajo del mínimo de
+     44px para touch targets que exige CLAUDE.md. En px la escala no depende del
+     tamaño de fuente raíz. ── */
+  --spacing: 4px;
+
+  /* ── Fuentes (mismos valores que tokens.css):
+     Inter = body · Space Grotesk = display/números ── */
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono: 'Space Grotesk', monospace;
+
+  /* ── Escala tipográfica (1rem = 15px) — usar pasos
+     con nombre, no arbitrarios text-[…] ── */
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 1.3;
+  --text-xs: 0.6875rem;
+  --text-xs--line-height: 1.35;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.4;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.45;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.4;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.3;
+  --text-3xl: 2.25rem;
+  --text-3xl--line-height: 1.1;
+
+  /* ── Pasos Stitch: números protagonistas y labels caps ── */
+  --text-display-huge: 4.5rem;
+  --text-display-huge--line-height: 0.9;
+  --text-display-huge--letter-spacing: -0.04em;
+  --text-display-huge--font-weight: 700;
+  /* Paso intermedio para los campos gigantes de KG/REPS: display-huge se come
+     el ancho de la pantalla y headline se queda corto. */
+  --text-display: 2.75rem;
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 700;
+  --text-headline: 2rem;
+  --text-headline--line-height: 1.125;
+  --text-headline--letter-spacing: -0.02em;
+  --text-headline--font-weight: 600;
+  --text-data: 1.125rem;
+  --text-data--line-height: 1.1;
+  --text-data--font-weight: 500;
+  --text-label-caps: 0.6875rem;
+  --text-label-caps--line-height: 1.1;
+  --text-label-caps--letter-spacing: 0.1em;
+  --text-label-caps--font-weight: 700;
+
+  /* ── Radios extra (los pasos por defecto no se tocan):
+     rounded-card para tarjetas, rounded-pill para chips ── */
+  --radius-card: 18px;
+  --radius-pill: 999px;
+
+  /* ── Elevación: plano = sin sombra · elevado = superficie + canto ·
+     flotante = halo (oscuro) o sombra (claro) ── */
+  /* Sobre el canvas oscuro una sombra negra no se ve: al 30 % da 1,0175:1
+     contra el fondo y el umbral de percepción ronda 1,05. Se conservan las
+     que llevan el ACENTO, que sí se ven porque el acento es claro, y las de
+     texto/elementos que viven sobre superficies claras. `:root.light` las
+     redefine con valores que ahí sí funcionan. Ver la nota de --glass-shadow-*
+     en tokens.css. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --shadow-card: none;
+  --shadow-fab: 0 4px 20px rgb(var(--accent-rgb) / 0.18);
+  --shadow-btn-accent: 0 1px 6px rgb(var(--accent-rgb) / 0.15);
+  --shadow-glow: 0 0 16px rgb(var(--accent-rgb) / 0.12);
+  --shadow-glow-error: 0 0 12px rgba(255, 180, 171, 0.2);
+}
+
+:root {
+  /* Insets de las barras del sistema. Fallback a env() para PWA/web e iOS;
+     en Android nativo MainActivity los sobrescribe con px reales. */
+  --inset-top: env(safe-area-inset-top);
+  --inset-right: env(safe-area-inset-right);
+  --inset-bottom: env(safe-area-inset-bottom);
+  --inset-left: env(safe-area-inset-left);
+
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 160%;
+  letter-spacing: 0;
+  color-scheme: dark;
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* El shell se mide contra la superficie REAL del WebView, no contra `dvh`.
+   En Android edge-to-edge el WebView ocupa toda la pantalla, pero `100dvh`
+   devuelve el viewport SIN las barras del sistema: medido en un Pixel 9a, la
+   barra inferior acababa 232 px antes del borde y dejaba una franja del color
+   de fondo debajo. Con `height: 100%` encadenado desde `html`, el shell llena
+   la superficie entera y son los `--inset-*` los que colocan el contenido
+   dentro de las barras. En web y PWA no cambia nada: ahí el 100% del documento
+   y el viewport coinciden. */
+html,
+body {
+  height: 100%;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  /* halo menta muy sutil arriba — da profundidad al negro plano */
+  background:
+    radial-gradient(120% 50% at 50% 0%, rgb(var(--accent-rgb) / 0.025), transparent 60%),
+    var(--bg-canvas);
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ════════════════════════════════════════════════
+   Utilidades Stitch (rediseño): separador punteado,
+   números tabulares y labels uppercase.
+   ════════════════════════════════════════════════ */
+
+/* Separador de línea fina.
+   Sigue siendo background-image y no `border-bottom` a propósito: así el
+   separador no entra en el modelo de caja y añadirlo o quitarlo no mueve nada
+   de sitio. Antes era punteado (4px al 33%); el punteado se leía sucio sobre
+   las superficies oscuras y no marcaba de verdad la separación. */
+.hairline-separator {
+  background-image: linear-gradient(to right, var(--border-subtle), var(--border-subtle));
+  background-position: bottom left;
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  padding-bottom: 1px;
+}
+
+/* Cifras tabulares para datos/contadores (Space Grotesk) */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Label caps Stitch: uppercase + tracking ancho (Inter 700) */
+.label-caps {
+  font-family: var(--font-sans);
+  font-size: var(--text-label-caps);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+/* ════════════════════════════════════════════════
+   Material vidrio "Liquid Glass"
+
+   Sin backdrop-filter, a propósito. La decisión y las mediciones que la
+   sustentan están en docs/spikes/liquid-glass-spike.md; el resumen es que
+   en oscuro ningún velo translúcido alcanza AA sobre el acento, y que la
+   auditoría de julio ya midió el jank de backdrop-filter en el WebView de
+   Android (ver BottomSheet.tsx).
+
+   Lo que hace que se lea como vidrio y no como una tarjeta cualquiera:
+   base casi opaca + canto luminoso arriba + degradado interno de caída de
+   luz. Las tres cosas juntas; quitar una lo rompe.
+
+   .glass-1 contenido · .glass-2 elevado · .glass-3 flotante
+   ════════════════════════════════════════════════ */
+
+.glass-1,
+.glass-2,
+.glass-3 {
+  border: 1px solid var(--glass-edge);
+  border-top-color: var(--glass-edge-top);
+  box-shadow: var(--glass-sheen);
+}
+
+/* El `position` va en @layer components, y no arriba con el resto, por una
+   razón concreta: este bloque de CSS no está en ninguna capa, y el CSS sin capa
+   gana SIEMPRE a las utilidades de Tailwind, por mucho que la clase aparezca
+   después en el className.
+   Con `position: relative` aquí, cualquier capa 3 que además quisiera anclarse
+   al viewport se quedaba en `relative`: el cajón de navegación (`glass-3 fixed`)
+   volvía al flujo, ocupaba el alto de la pantalla y empujaba cabecera y barra
+   inferior hacia abajo hasta cortarlas.
+   En `components` la utilidad manda, que es lo que espera cualquiera que
+   escriba `fixed`. El relative se mantiene como valor por defecto porque lo
+   necesita el ::before del velo, que va con `inset: 0`. */
+@layer components {
+  .glass-1,
+  .glass-2,
+  .glass-3 {
+    position: relative;
+  }
+}
+
+/* El degradado va en un ::before y no en el background del elemento para no
+   pisar el background-image de quien lo use (charts, imágenes de fondo). */
+.glass-1::before,
+.glass-2::before,
+.glass-3::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--glass-veil);
+  pointer-events: none;
+}
+
+.glass-1 {
+  background-color: var(--glass-1);
+  box-shadow: var(--glass-sheen);
+}
+.glass-2 {
+  background-color: var(--glass-2);
+  box-shadow: var(--glass-sheen), var(--glass-shadow-2);
+}
+.glass-3 {
+  background-color: var(--glass-3);
+  box-shadow: var(--glass-sheen), var(--glass-shadow-3);
+}
+
+/* Modificador para la capa 3 que TAPA contenido en lugar de flotar sobre él:
+   paneles a pantalla completa (el cajón de navegación), no chrome delgado.
+   Conserva canto, brillo y sombra —sigue siendo capa 3— y solo quita el alpha
+   del fondo. Va después de `.glass-3` y fuera de capa a propósito: `.glass-3`
+   tampoco está en ninguna capa, así que a igual especificidad decide el orden. */
+.glass-solid {
+  background-color: var(--glass-3-solid);
+}
+
+/* Difuminado de borde de scroll: la tira donde el contenido se disuelve al
+   entrar bajo el chrome flotante. Es el sustituto perceptual del blur —
+   da la misma señal ("hay algo pasando por debajo") pintando un degradado
+   estático, sin muestrear el backdrop en cada frame.
+   Se coloca pegado al borde interior del header o del bottom nav. */
+.glass-scroll-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--glass-fade-height);
+  background: var(--glass-fade);
+  pointer-events: none;
+  z-index: var(--z-raised);
+}
+.glass-scroll-fade-bottom {
+  transform: rotate(180deg);
+}
+
+/* Las tiras solo se ven cuando hay algo que disolver: si el scroller está
+   arriba del todo, una franja permanente dejaría el primer elemento lavado
+   sin motivo. Layout las enciende mirando scrollTop. */
+.glass-scroll-fade {
+  opacity: 0;
+  transition: opacity var(--anim-duration-normal) var(--ease-standard);
+}
+.glass-scroll-fade[data-visible='true'] {
+  opacity: 1;
+}
+
+/* Chrome a sangre (cabecera, barra inferior): lleva el fondo y el brillo del
+   material pero NO la caja. Un borde de cuatro lados en algo que va de lado a
+   lado de la pantalla dibuja dos hairlines verticales en los bordes. */
+.glass-flush {
+  border-width: 0;
+}
+.glass-flush-b {
+  border-bottom-width: 1px;
+  border-bottom-color: var(--glass-edge);
+}
+.glass-flush-t {
+  border-top-width: 1px;
+  border-top-color: var(--glass-edge-top);
+}
+.glass-flush-r {
+  border-right-width: 1px;
+  border-right-color: var(--glass-edge);
+}
+
+/* Sobre vidrio el texto necesita algo más de cuerpo: es la "vibrancy" de
+   Apple. Sin esto el texto secundario se lee lavado aunque el contraste
+   medido pase. */
+.glass-text {
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+
+/* Si el usuario pide menos transparencia, el vidrio se vuelve sólido.
+   Nuestras capas ya son casi opacas, así que el salto es pequeño. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-1 {
+    background-color: var(--bg-canvas);
+  }
+  .glass-2 {
+    background-color: var(--bg-surface);
+  }
+  .glass-3 {
+    background-color: var(--bg-surface-2);
+  }
+  .glass-1::before,
+  .glass-2::before,
+  .glass-3::before {
+    background: none;
+  }
+}
+
+/* Más contraste: el canto deja de ser sutil y pasa a ser un borde de verdad. */
+@media (prefers-contrast: more) {
+  .glass-1,
+  .glass-2,
+  .glass-3 {
+    border-color: var(--border-default);
+    border-top-color: var(--border-default);
+  }
+}
+
+/* ════════════════════════════════════════════════
+   Fluidez / rendimiento táctil (WebView Android)
+   ════════════════════════════════════════════════ */
+
+/* Sin resaltado azul al tocar; respuesta de tap inmediata (sin delay de doble-tap) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+a,
+button,
+[role='button'],
+label,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/* Área táctil de 44 px sin engordar el control.
+
+   La regla de móvil pide 44 px, pero hay controles cuyo fondo SÍ se ve en
+   reposo —los círculos de ±15 s del descanso, las flechas de mes del
+   calendario— y agrandar la caja les cambia el diseño. Este pseudo-elemento es
+   transparente y solo existe para el dedo: el círculo sigue midiendo lo que
+   medía y la zona que responde pasa a 44.
+
+   Solo para controles con hueco alrededor: dos `tap-44` a menos de 44 px de
+   distancia se solapan y el de después en el DOM se queda con la zona común.
+   Cuando el control no tiene fondo en reposo no hace falta esto — allí basta
+   con darle los 44 px de verdad, porque no se nota. */
+.tap-44 {
+  position: relative;
+}
+.tap-44::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+
+/* Scroll con momentum y sin encadenar el rebote al contenedor padre */
+.overflow-y-auto,
+.overflow-auto,
+.overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* El contenedor de páginas usa touch-action: pan-y para que el swipe horizontal
+   cambie de sección. Los scrollers horizontales internos (píldoras, carruseles)
+   y los sliders re-habilitan ambos ejes para conservar su gesto propio. */
+.overflow-x-auto,
+.overflow-x-scroll,
+input[type='range'] {
+  touch-action: pan-x pan-y;
+}
+
+/* Las capas animadas suben a GPU → menos repaints durante scroll/transición */
+.timer-pulse,
+.pulse-soft,
+.offline-pulse {
+  will-change: transform, opacity;
+}
+
+/* Respeta la preferencia del sistema: corta animaciones costosas.
+   Fuente única del reset universal (más abajo hay un bloque específico por
+   clase para las animaciones decorativas). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar invisible en mobile */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Estilos base de elemento: DEBEN ir en @layer base. Sin capa, en Tailwind v4
+   ganan a todas las utilidades (el CSS sin capa vence al CSS en capas), así que
+   un <h1 className="text-lg text-accent"> salía a 48px y en color de titular —
+   se veía en la cabecera de cada pantalla y en Mis estadísticas. */
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--text-h);
+  }
+
+  /* Sin margen de documento: cada pantalla coloca su titular con utilidades
+     (mb-4, space-y-*). El margen heredado dejaba un hueco muerto arriba. */
+  h1 {
+    font-size: 48px;
+    letter-spacing: -1px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 120%;
+    letter-spacing: -0.5px;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  code,
+  .counter {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums; /* dígitos de ancho fijo — timers sin saltos */
+    display: inline-flex;
+    border-radius: 4px;
+    color: var(--text-h);
+  }
+
+  code {
+    font-size: 15px;
+    line-height: 135%;
+    padding: 4px 8px;
+    background: var(--bg-surface-2);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.slide-up {
+  animation: slide-up 0.4s var(--ease-decelerate) forwards;
+}
+
+.fade-in {
+  animation: fade-in 0.5s var(--ease-decelerate) forwards;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+.pulse-soft {
+  animation: pulse-soft 1.6s ease-in-out infinite;
+}
+
+.bounce-in {
+  animation: bounce-in 0.5s var(--ease-decelerate) forwards;
+}
+
+input,
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+}
+
+/* Anillo de foco por defecto. Va en @layer base para que un input pueda
+   desactivarlo con utilidades (shadow-none) cuando el foco lo pinta su
+   contenedor — si no, el rectángulo rompe los campos con forma de píldora. */
+@layer base {
+  input:focus,
+  select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--accent-rgb) / 0.25);
+    border-color: var(--border-accent);
+  }
+}
+
+/* Inputs premium — sin degradado iOS */
+input[type='number'],
+input[type='text'],
+input[type='email'],
+input[type='password'] {
+  background-clip: padding-box;
+}
+
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.safe-area-top {
+  padding-top: var(--inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: var(--inset-left);
+}
+
+.safe-area-right {
+  padding-right: var(--inset-right);
+}
+
+@keyframes toggle-on {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+/* Glow estático: la versión anterior animaba `box-shadow` en bucle infinito, lo
+   que fuerza un repaint por frame para siempre mientras el toggle esté activo.
+   El estado ya se comunica con el color de fondo; el brillo no necesita latir. */
+
+@keyframes button-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-press {
+  animation: button-press 0.15s var(--ease-standard);
+}
+
+.toggle-on {
+  box-shadow: 0 0 12px rgb(var(--accent-rgb) / 0.45);
+}
+
+.fade-in-up {
+  animation: fade-in-up 0.3s var(--ease-decelerate) forwards;
+}
+
+@keyframes timer-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@keyframes timer-complete {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.timer-pulse {
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+
+.timer-complete {
+  animation: timer-complete 0.5s var(--ease-standard);
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgb(var(--accent-rgb) / 0.3);
+  animation: ripple 0.6s var(--ease-standard);
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes success-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes error-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes input-focus {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0);
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.3s var(--ease-decelerate) forwards;
+}
+.slide-out-left {
+  animation: slide-out-left 0.2s var(--ease-accelerate) forwards;
+}
+.scale-in {
+  animation: scale-in 0.3s var(--ease-decelerate) forwards;
+}
+.scale-out {
+  animation: scale-out 0.2s var(--ease-accelerate) forwards;
+}
+.shimmer {
+  animation: shimmer 1.5s infinite;
+}
+.success-pulse {
+  animation: success-pulse 0.3s var(--ease-standard);
+}
+.error-shake {
+  animation: error-shake 0.4s var(--ease-standard);
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-2) 25%,
+    var(--bg-surface-3) 50%,
+    var(--bg-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes offline-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.offline-pulse {
+  animation: offline-pulse 2s ease-in-out infinite;
+}
+
+/* ════════════════════════════════════════════════
+   Avisos (sonner)
+   ════════════════════════════════════════════════
+   Sonner se monta sin estilos (`unstyled`) y el aspecto lo pone el sistema de
+   diseño. El aviso es chrome flotante, así que lleva `glass-3` en el className
+   y aquí solo se añade lo que la capa no cubre: tipografía, espaciado y el
+   color del icono según el tipo.
+
+   El tipo se distingue por el ICONO y por el canto, nunca por el fondo: un
+   fondo rojo o verde bajo el texto se sale del techo de contraste que marca el
+   AA de --text-primary, y es lo que hace ilegibles los avisos de las apps que
+   pintan la superficie entera de color. */
+
+.gl-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  line-height: 1.4;
+}
+
+.gl-toast__title {
+  font-weight: 600;
+}
+
+.gl-toast__description {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.gl-toast__icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+/* Es el único sitio donde el color del estado vale más que el acento: un aviso
+   de error tiene que leerse como error aunque el acento del usuario sea rojo. */
+.gl-toast--success .gl-toast__icon {
+  color: var(--success);
+}
+
+.gl-toast--error .gl-toast__icon {
+  color: var(--error);
+}
+
+.gl-toast--warning .gl-toast__icon {
+  color: var(--warning);
+}
+
+.gl-toast--info .gl-toast__icon {
+  color: var(--interactive-primary);
+}
+
+/* El canto tintado es la segunda señal, para quien no distinga los colores del
+   icono: cambia el borde, no el velo. */
+.gl-toast--error {
+  border-color: color-mix(in srgb, var(--error) 45%, transparent);
+}
+
+.gl-toast--success {
+  border-color: color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+/* Los botones van cualificados con `[data-sonner-toast]` a propósito: sonner
+   trae sus propias reglas con esa misma forma (`[data-sonner-toast]
+   [data-close-button]`), que con una sola clase ganan por especificidad. Sin
+   esto el aspa se quedaba negra sobre blanco en tema claro. */
+[data-sonner-toast] .gl-toast__action,
+[data-sonner-toast] .gl-toast__cancel,
+[data-sonner-toast] .gl-toast__close {
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+[data-sonner-toast] .gl-toast__action,
+[data-sonner-toast] .gl-toast__cancel {
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+[data-sonner-toast] .gl-toast__action {
+  border: none;
+  background: var(--interactive-primary);
+  color: var(--interactive-primary-fg);
+}
+
+[data-sonner-toast] .gl-toast__cancel {
+  border: none;
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+}
+
+[data-sonner-toast] .gl-toast__close {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--glass-edge);
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+}
+
+/* El aspa mide 28px porque más grande desequilibra el aviso, pero lo que
+   responde al dedo llega a 44: es la regla dura de objetivo táctil del
+   proyecto, y cerrar un aviso es justo lo que se toca en movimiento. */
+[data-sonner-toast] .gl-toast__close::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+[data-sonner-toast] .gl-toast__close:hover {
+  color: var(--text-primary);
+}
+
+/* Accesibilidad: desactivar animaciones decorativas */
+@media (prefers-reduced-motion: reduce) {
+  .slide-up,
+  .fade-in,
+  .fade-in-up,
+  .pulse,
+  .pulse-soft,
+  .bounce-in,
+  .slide-in-right,
+  .slide-out-left,
+  .scale-in,
+  .scale-out,
+  .shimmer,
+  .skeleton,
+  .success-pulse,
+  .timer-pulse,
+  .toggle-on,
+  .offline-pulse,
+  .ripple {
+    animation: none !important;
+  }
+
+  /* Sonner no anima con @keyframes sino con transiciones sobre transform y
+     opacity, así que la lista de arriba no le llega: hay que apagarlas aparte. */
+  [data-sonner-toast] {
+    transition: none !important;
+  }
+}

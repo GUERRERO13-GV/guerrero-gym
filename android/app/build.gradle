@@ -1,0 +1,121 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+// package.json es la única fuente de verdad de la versión: versionName la copia
+// tal cual y versionCode se deriva (4.1.0 -> 40100), estrictamente creciente
+// como exige Play Store. Así un release toca un solo fichero.
+def packageJson = new groovy.json.JsonSlurper().parse(rootProject.file("../package.json"))
+def appVersionName = packageJson.version
+def (vMajor, vMinor, vPatch) = appVersionName.tokenize('.').collect { it.toInteger() }
+def appVersionCode = vMajor * 10000 + vMinor * 100 + vPatch
+
+def keystorePropertiesFile = rootProject.file("local.properties")
+def keystoreProperties = new Properties()
+// En CI no existe local.properties (gitignored: SDK + claves de firma).
+// Cargar solo si está, para no romper assembleDebug en GitHub Actions.
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace = "com.franvi.gymlog"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.franvi.gymlog"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode appVersionCode
+        versionName appVersionName
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        release {
+            if (keystoreProperties['STORE_FILE'] != null) {
+                storeFile file(keystoreProperties['STORE_FILE'])
+                storePassword keystoreProperties['STORE_PASSWORD']
+                keyAlias keystoreProperties['KEY_ALIAS']
+                keyPassword keystoreProperties['KEY_PASSWORD']
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            // Variante de prueba: sufijo propio para que se instale JUNTO a la app
+            // real (com.franvi.gymlog) sin sobrescribirla. El namespace (paquete
+            // Java) sigue siendo com.franvi.gymlog, y el esquema del deep link del
+            // manifest es literal, así que no le afecta.
+            //
+            // Va en `debug` y no en `defaultConfig`: ahí aplicaba TAMBIÉN a
+            // release, así que cada APK de publicación salía como
+            // com.franvi.gymlog.fitbody y no actualizaba a nadie. Había que
+            // quitarlo a mano en cada release y volver a ponerlo. El CI compila
+            // assembleDebug, así que para él nada cambia.
+            applicationIdSuffix ".fitbody"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation "androidx.core:core-ktx:$androidxCoreVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "androidx.biometric:biometric:$androidxBiometricVersion"
+    implementation "androidx.work:work-runtime-ktx:$androidxWorkVersion"
+    implementation "androidx.health.connect:connect-client:$healthConnectVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinxCoroutinesVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+} else {
+    logger.warn("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
+
+// Cada build release deja el APK en la raíz del repo con la versión en el
+// nombre, que es tal cual se adjunta al release de GitHub.
+//
+// Antes se llamaba GymLog-FitBody.apk: resto del variante de prueba, cuando el
+// sufijo .fitbody estaba en defaultConfig y contaminaba también los release.
+tasks.configureEach { task ->
+    if (task.name == "assembleRelease") {
+        task.doLast {
+            def apkName = "GymLog-v${appVersionName}.apk"
+            copy {
+                from layout.buildDirectory.file("outputs/apk/release/app-release.apk")
+                into "${rootDir}/.."
+                rename { apkName }
+            }
+            logger.lifecycle("APK release copiado a la raíz del repo: ${apkName}")
+        }
+    }
+}

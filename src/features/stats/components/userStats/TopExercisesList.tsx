@@ -1,0 +1,78 @@
+import { m } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { CHART_COLORS, MEDAL_COLORS, MEDAL_FG } from '../../constants';
+import { SectionLabel } from './SectionLabel';
+import { useWeight } from '@shared/hooks/useWeight';
+
+export interface TopExerciseItem {
+  name: string;
+  volume: number;
+  sets: number;
+  best1rm: number;
+}
+
+export function TopExercisesList({ data }: { data: TopExerciseItem[] }) {
+  const { formatVol } = useWeight();
+  const { t } = useTranslation();
+  return (
+    <section className="space-y-3">
+      <SectionLabel>{t('userStats.top_exercises_title')}</SectionLabel>
+      <m.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="rounded-card overflow-hidden bg-surface border border-line"
+      >
+        {data.map((ex, i) => {
+          const maxVol = data[0].volume;
+          const pct = Math.round((ex.volume / maxVol) * 100);
+          return (
+            <div
+              key={ex.name}
+              className="px-4 py-3"
+              style={{
+                borderBottom: i < data.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+              }}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold flex-shrink-0"
+                    style={{
+                      backgroundColor: MEDAL_COLORS[i] ?? 'var(--bg-surface-2)',
+                      color: i < MEDAL_COLORS.length ? MEDAL_FG : 'var(--text-tertiary)',
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="text-sm font-medium text-fg">{ex.name}</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold font-mono text-accent">
+                    {formatVol(ex.volume)}
+                  </div>
+                  <div className="text-2xs text-fg-subtle">
+                    {t('stats.top_ex_1rm', {
+                      count: ex.sets,
+                      value: ex.best1rm.toFixed(0),
+                      unit: t('stats.kg_unit'),
+                    })}
+                  </div>
+                </div>
+              </div>
+              <div className="h-1 rounded-full overflow-hidden bg-surface-2">
+                <m.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ delay: 0.55 + i * 0.05, duration: 0.5 }}
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </m.div>
+    </section>
+  );
+}

@@ -1,0 +1,144 @@
+import { readFileSync } from 'node:fs';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { aliases } from './vite.aliases';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'));
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const sbUrl = env.VITE_SUPABASE_URL;
+  const sbKey = env.VITE_SUPABASE_KEY;
+  const sentryAuthToken = env.SENTRY_AUTH_TOKEN;
+
+  return {
+    resolve: {
+      alias: aliases,
+    },
+    build: {
+      // Sin auth token no se suben a Sentry, pero generarlos no tiene coste
+      // en runtime (Vite los deja fuera del bundle servido).
+      sourcemap: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            recharts: ['recharts'],
+            supabase: ['@supabase/supabase-js'],
+            // framer-motion sin manualChunk: con LazyMotion, Rollup separa el core (m)
+            // de las features (domMax), que cargan async vía motionFeatures.ts
+            query: ['@tanstack/react-query'],
+            excel: ['exceljs'],
+          },
+        },
+      },
+    },
+    define: {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(sbUrl),
+      'import.meta.env.VITE_SUPABASE_KEY': JSON.stringify(sbKey),
+      __APP_VERSION__: JSON.stringify(pkg.version),
+      // Poda el código de depuración de Sentry, que es lo que arrastra el
+      // bundle `dev/` de @sentry/browser — y con él la integración Spotlight,
+      // una herramienta de desarrollo que no se referencia desde src/ ni desde
+      // esta config. __SENTRY_TRACING__ se deja como está: el tracing sí se usa.
+      __SENTRY_DEBUG__: JSON.stringify(false),
+    },
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        // El registro lo hace main.tsx a mano: en Capacitor los assets ya son
+        // ficheros locales, así que el SW no aporta nada offline y sí servía
+        // JS viejo tras actualizar el APK. En web sigue registrándose igual.
+        injectRegister: null,
+        includeAssets: ['favicon.ico', 'apple-touch-icon.webp', 'masked-icon.svg'],
+        // Manifest único (antes existía public/manifest.json duplicado que lo eclipsaba)
+        manifest: {
+          name: 'GUERRERO-GYM',
+          short_name: 'GUERRERO-GYM',
+          description: 'Tu diario de entrenamiento de fuerza',
+          lang: 'es',
+          theme_color: '#0a0a0b',
+          background_color: '#0a0a0b',
+          display: 'standalone',
+          orientation: 'portrait',
+          categories: ['fitness', 'health', 'sports'],
+          shortcuts: [
+            {
+              name: 'Nuevo Entrenamiento',
+              short_name: 'Entrenar',
+              description: 'Iniciar nuevo entrenamiento',
+              url: '/',
+              icons: [{ src: 'icon-192x192.webp', sizes: '192x192', type: 'image/webp' }],
+            },
+          ],
+          icons: [
+            {
+              src: 'icon-192x192.webp',
+              sizes: '192x192',
+              type: 'image/webp',
+            },
+            {
+              src: 'icon-512x512.webp',
+              sizes: '512x512',
+              type: 'image/webp',
+              purpose: 'any maskable',
+            },
+          ],
+        },
+        workbox: {
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,json,woff2}'],
+          importScripts: ['sw-custom.js'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'supabase-api',
+                networkTimeoutSeconds: 10,
+                expiration: { maxEntries: 50, maxAgeSeconds: 60 },
+              },
+            },
+            // Nada de runtimeCaching para js/css/html/fuentes: `globPatterns` ya
+            // los precachea con revisión. Había un CacheFirst de 30 días sobre
+            // ellos y un StaleWhileRevalidate del html que ensombrecían el
+            // precache y podían servir un index.html viejo (apuntando a chunks
+            // viejos) tras publicar una versión.
+          ],
+        },
+        devOptions: {
+          // SW desactivado en dev: con HMR se regenera constantemente y dispara
+          // el toast de "nueva versión" en bucle.
+          enabled: false,
+          type: 'module',
+        },
+      }),
+      mode === 'analyze' &&
+        visualizer({
+          filename: 'dist/bundle-report.html',
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+        }),
+      // Sube source maps a Sentry solo si hay token (no bloquea builds locales/CI sin él).
+      sentryAuthToken &&
+        sentryVitePlugin({
+          org: 'franvi',
+          project: 'capacitor',
+          authToken: sentryAuthToken,
+          sourcemaps: {
+            // Sin esto, los .map quedan en dist/ y Vercel los serviría en
+            // público — cualquiera podría descargar el código fuente sin minificar.
+            filesToDeleteAfterUpload: ['dist/**/*.js.map'],
+          },
+        }),
+    ].filter(Boolean) as unknown as Plugin[],
+  };
+});

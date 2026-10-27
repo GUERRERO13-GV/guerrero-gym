@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+    <!-- NO usar DayNight: el tema de la app lo elige el usuario en Ajustes y vive
+         en JS (settingsStore), no en el modo claro/oscuro del sistema. Con DayNight,
+         `windowBackground` se resolvía a blanco cuando el sistema estaba en claro y
+         esa franja se veía detrás de la barra de estado, con los iconos en blanco
+         encima → ilegible (QA-01). Fijamos el fondo a la base oscura de la app. -->
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/appBackground</item>
+        <!-- Barras transparentes: la app es edge-to-edge, así el fondo del propio
+             WebView se ve detrás y adapta a tema claro/oscuro. Un color fijo dejaba
+             una franja que no seguía al tema de la app. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="29">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="29">false</item>
+        <item name="android:background">@null</item>
+    </style>
+    <!-- Variante clara para el arranque: MainActivity la aplica vía setTheme
+         cuando la preferencia persistida es «claro» (o «sistema» en modo claro),
+         antes de super.onCreate. Evita el parpadeo de la franja oscura en tema
+         claro durante la carga del WebView. -->
+    <style name="AppTheme.NoActionBar.Light" parent="Theme.AppCompat.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/appBackgroundLight</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="29">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="29">false</item>
+        <item name="android:background">@null</item>
+    </style>
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0A0A0B</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo_styled</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+    </style>
+    <style name="AppTheme.NoActionBarLaunch.Light" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/appBackgroundLight</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo_styled</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar.Light</item>
+    </style>
+</resources>

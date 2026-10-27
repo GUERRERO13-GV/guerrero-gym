@@ -1,0 +1,111 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# APKs / AABs (artefactos de build / release — no versionar)
+*.apk
+*.aab
+
+# Fastlane: artefactos de ejecución y gemas locales (el Gemfile.lock SÍ se versiona)
+fastlane/report.xml
+fastlane/README.md
+.bundle/
+vendor/bundle/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.vercel
+.env
+.env*.local
+
+# Test results
+test-results/
+supabase/test-results/
+graphify-out/
+
+# Estado local del CLI de Supabase (proyecto enlazado). No es secreto, pero es
+# de esta maquina: no tiene nada que hacer en el repo.
+supabase/.temp/
+
+# Build artifacts (local only)
+coverage/
+dev-dist/
+versiones/
+
+# screenshot generado por scripts/icon-preview.mjs
+scripts/icon-preview.png
+
+# Local per-user Claude settings (never commit — may contain secrets)
+.claude/settings.local.json
+
+.env*
+
+# AI agent tooling config (per-user, graphify knowledge-graph — no versionar)
+.mcp.json
+.codex/
+.cursor/
+.gemini/
+.opencode/
+AGENTS.md
+GEMINI.md
+
+# Analisis de levantamientos (docs/LIFT_ANALYSIS_PLAN.md) — entorno y salidas locales
+tools/lift-analysis/.venv/
+tools/lift-analysis/out/
+# Pesos del modelo: los descarga solo Ultralytics en la primera ejecución.
+tools/lift-analysis/*.pt
+__pycache__/
+*.pyc
+android/manifest-aliases.generated.xml
+
+# Proyecto nativo iOS: se regenera con `npx cap add ios` (local o en CI,
+# ver ios-custom/README.md) — no se versiona, a diferencia de android/.
+ios/
+
+# Notas personales con claves de API en claro. El repo es PÚBLICO: nada de
+# esto puede acabar en un commit. Las claves de verdad van en .env.local
+# (ya cubierto por .env*) o en `supabase secrets set`.
+IAS.md
+openspec/IAS.md
+**/IAS.md
+*.secrets.md
+
+# Credenciales de la cuenta de prueba local (nunca al repo publico)
+supabase/usuario_prueba.txt
+
+# capturas temporales de Playwright MCP
+.playwright-mcp/
+
+# capturas de UI para comparar antes/después
+.shots/
+
+# volcado generado por repomix (9 MB, regenerable)
+repomix-output.xml
+
+# backups de datos de Supabase: pueden contener datos de usuario
+supabase/backups/
+
+# Exportaciones locales con datos personales (GymLog y Google Health)
+exports/gym-log-full-export/
+
+# Plantilla de variables (sin secretos): sí se versiona
+!.env.example

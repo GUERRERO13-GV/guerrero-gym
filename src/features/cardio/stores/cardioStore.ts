@@ -1,0 +1,320 @@
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createThrottledLocalStorage } from '@shared/lib/throttledStorage';
+import { supabase } from '@shared/lib/supabase';
+import { devError, devWarn } from '@shared/lib/devtools';
+
+export type CardioType =
+  'running' | 'cycling' | 'rowing' | 'swimming' | 'elliptical' | 'walking' | 'jump_rope' | 'other';
+
+/**
+ * Etiquetas cortas para la fila de tipos: con los nombres largos, «BICICLETA»,
+ * «CAMINATA» y «NATACIÓN» se tocaban entre sí bajo baldosas de 56 px (visto en
+ * el emulador). El nombre completo se sigue usando en el historial.
+ */
+export const CARDIO_SHORT_LABELS: Record<CardioType, string> = {
+  running: 'Correr',
+  cycling: 'Bici',
+  rowing: 'Remo',
+  swimming: 'Nadar',
+  elliptical: 'Elípt.',
+  walking: 'Andar',
+  jump_rope: 'Cuerda',
+  other: 'Otro',
+};
+
+export const CARDIO_LABELS: Record<CardioType, string> = {
+  running: 'Correr',
+  cycling: 'Bicicleta',
+  rowing: 'Remo',
+  swimming: 'Natación',
+  elliptical: 'Elíptica',
+  walking: 'Caminata',
+  jump_rope: 'Cuerda',
+  other: 'Otro',
+};
+
+export interface CardioSession {
+  id: string;
+  type: CardioType;
+  startedAt: string;
+  duration: number;
+  distance?: number;
+  calories?: number;
+  notes?: string;
+  pendingSync?: boolean;
+  // Importado de wearables (Health Connect / HealthKit)
+  avgHr?: number;
+  maxHr?: number;
+  source?: string;
+}
+
+interface CardioState {
+  isActive: boolean;
+  isPaused: boolean;
+  activeType: CardioType | null;
+  startedAt: string | null;
+  pausedAt: string | null;
+  pausedDuration: number;
+  sessions: CardioSession[];
+
+  startSession: (type: CardioType) => void;
+  pauseSession: () => void;
+  resumeSession: () => void;
+  stopSession: (
+    userId: string | null | undefined,
+    extras?: {
+      distance?: number;
+      calories?: number;
+      notes?: string;
+    },
+  ) => Promise<CardioSession | null>;
+  discardSession: () => void;
+  deleteSession: (id: string, userId?: string | null) => Promise<void>;
+  syncFromRemote: (userId: string) => Promise<void>;
+  getElapsed: () => number;
+  /** Igual que getElapsed pero en ms, para el cronómetro con décimas. */
+  getElapsedMs: () => number;
+}
+
+// Evita pushes duplicados si syncFromRemote se invoca concurrentemente
+// (p.ej. doble navegación rápida): sin este guard, ambas llamadas leen las
+// mismas sesiones pendientes y las insertan dos veces en Supabase.
+let syncInFlight = false;
+
+export const useCardioStore = create<CardioState>()(
+  persist(
+    (set, get) => ({
+      isActive: false,
+      isPaused: false,
+      activeType: null,
+      startedAt: null,
+      pausedAt: null,
+      pausedDuration: 0,
+      sessions: [],
+
+      startSession: (type) => {
+        set({
+          isActive: true,
+          isPaused: false,
+          activeType: type,
+          startedAt: new Date().toISOString(),
+          pausedAt: null,
+          pausedDuration: 0,
+        });
+      },
+
+      pauseSession: () => {
+        if (!get().isActive || get().isPaused) return;
+        set({ isPaused: true, pausedAt: new Date().toISOString() });
+      },
+
+      resumeSession: () => {
+        const { isPaused, pausedAt, pausedDuration } = get();
+        if (!isPaused || !pausedAt) return;
+        const extra = Math.floor((Date.now() - new Date(pausedAt).getTime()) / 1000);
+        set({ isPaused: false, pausedAt: null, pausedDuration: pausedDuration + extra });
+      },
+
+      stopSession: async (userId, extras = {}) => {
+        const { isActive, activeType, startedAt } = get();
+        if (!isActive || !activeType || !startedAt) return null;
+
+        const elapsed = get().getElapsed();
+        if (elapsed < 5) {
+          get().discardSession();
+          return null;
+        }
+
+        const session: CardioSession = {
+          id: crypto.randomUUID(),
+          type: activeType,
+          startedAt,
+          duration: elapsed,
+          ...extras,
+        };
+
+        if (userId) {
+          const { data, error } = await supabase
+            .from('cardio_sessions')
+            .upsert(
+              {
+                user_id: userId,
+                type: session.type,
+                started_at: session.startedAt,
+                duration: session.duration,
+                distance: session.distance ?? null,
+                calories: session.calories ?? null,
+                notes: session.notes ?? null,
+              },
+              { onConflict: 'user_id,started_at' },
+            )
+            .select('id')
+            .single();
+          if (!error && data?.id) {
+            session.id = data.id;
+            session.pendingSync = false;
+          } else {
+            session.pendingSync = true;
+            if (error) devError('[CardioStore] insert failed:', error.message);
+          }
+        } else {
+          session.pendingSync = true;
+        }
+
+        set((state) => ({
+          sessions: [session, ...state.sessions].slice(0, 100),
+          isActive: false,
+          isPaused: false,
+          activeType: null,
+          startedAt: null,
+          pausedAt: null,
+          pausedDuration: 0,
+        }));
+
+        return session;
+      },
+
+      discardSession: () => {
+        set({
+          isActive: false,
+          isPaused: false,
+          activeType: null,
+          startedAt: null,
+          pausedAt: null,
+          pausedDuration: 0,
+        });
+      },
+
+      deleteSession: async (id, userId) => {
+        set((state) => ({ sessions: state.sessions.filter((s) => s.id !== id) }));
+        if (userId) {
+          const { error } = await supabase.from('cardio_sessions').delete().eq('id', id);
+          if (error) devError('[CardioStore] delete failed:', error.message);
+        }
+      },
+
+      syncFromRemote: async (userId) => {
+        if (syncInFlight) return;
+        syncInFlight = true;
+        try {
+          const { data, error } = await supabase
+            .from('cardio_sessions')
+            .select(
+              'id, type, started_at, duration, distance, calories, notes, avg_hr, max_hr, source',
+            )
+            .eq('user_id', userId)
+            .order('started_at', { ascending: false })
+            .limit(200);
+          if (error) {
+            devError('[CardioStore] syncFromRemote failed:', error.message);
+            return;
+          }
+          const remote: CardioSession[] = (data || []).map((r) => ({
+            id: r.id,
+            type: r.type as CardioType,
+            startedAt: r.started_at,
+            duration: r.duration,
+            distance: r.distance ?? undefined,
+            calories: r.calories ?? undefined,
+            notes: r.notes ?? undefined,
+            avgHr: r.avg_hr ?? undefined,
+            maxHr: r.max_hr ?? undefined,
+            source: r.source ?? undefined,
+            pendingSync: false,
+          }));
+
+          // Sube SOLO lo que nunca llegó al servidor.
+          //
+          // Antes también se subía cualquier sesión local ausente del remoto, y
+          // eso resucita los borrados: una sesión eliminada en Supabase (o en
+          // otro dispositivo) volvía a insertarse en la siguiente sync, encima
+          // como 'manual' porque el upsert de abajo no manda source ni
+          // external_id. Pasó de verdad con una sesión de gimnasio
+          // reclasificada: reaparecía en el historial como cardio "otro"
+          // duplicado, una y otra vez.
+          //
+          // `pendingSync` distingue los dos casos sin ambigüedad: stopSession lo
+          // pone a false solo cuando Supabase devolvió el id. Una sesión con
+          // false que ya no está en remoto se borró allí, y lo correcto es
+          // dejarla morir — el merge de abajo la quita del estado local.
+          const pending = get().sessions.filter((s) => s.pendingSync === true);
+          const stillPending: CardioSession[] = [];
+          if (pending.length > 0) {
+            const { data: inserted, error: pushErr } = await supabase
+              .from('cardio_sessions')
+              .upsert(
+                pending.map((s) => ({
+                  user_id: userId,
+                  type: s.type,
+                  started_at: s.startedAt,
+                  duration: s.duration,
+                  distance: s.distance ?? null,
+                  calories: s.calories ?? null,
+                  notes: s.notes ?? null,
+                })),
+                { onConflict: 'user_id,started_at' },
+              )
+              .select('id, type, started_at, duration, distance, calories, notes');
+            if (!pushErr && inserted && inserted.length > 0) {
+              inserted.forEach((r) =>
+                remote.unshift({
+                  id: r.id,
+                  type: r.type as CardioType,
+                  startedAt: r.started_at,
+                  duration: r.duration,
+                  distance: r.distance ?? undefined,
+                  calories: r.calories ?? undefined,
+                  notes: r.notes ?? undefined,
+                  pendingSync: false,
+                }),
+              );
+            } else {
+              // Keep pending sessions for next retry
+              pending.forEach((p) => stillPending.push({ ...p, pendingSync: true }));
+              if (pushErr) devError('[CardioStore] push pending failed:', pushErr.message);
+              else if (!inserted || inserted.length === 0)
+                devWarn('[CardioStore] push returned no rows — keeping sessions as pending');
+            }
+          }
+
+          const merged = [...stillPending, ...remote];
+          merged.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+          set({ sessions: merged });
+        } finally {
+          syncInFlight = false;
+        }
+      },
+
+      getElapsed: () => Math.floor(get().getElapsedMs() / 1000),
+
+      // `pausedDuration` se guarda en segundos enteros (ver resumeSession), de
+      // ahí el * 1000 al restarlo de un total en milisegundos.
+      getElapsedMs: () => {
+        const { startedAt, pausedAt, pausedDuration, isPaused } = get();
+        if (!startedAt) return 0;
+        const total = Date.now() - new Date(startedAt).getTime();
+        const paused =
+          isPaused && pausedAt
+            ? pausedDuration * 1000 + (Date.now() - new Date(pausedAt).getTime())
+            : pausedDuration * 1000;
+        return Math.max(0, total - paused);
+      },
+    }),
+    {
+      name: 'gymlog-cardio',
+      // Agrupado: el payload persistido llega a 100 sesiones, y `syncFromRemote`
+      // lo reescribe entero en cada merge.
+      storage: createJSONStorage(() => createThrottledLocalStorage()),
+      partialize: (s) => ({
+        isActive: s.isActive,
+        isPaused: s.isPaused,
+        activeType: s.activeType,
+        startedAt: s.startedAt,
+        pausedAt: s.pausedAt,
+        pausedDuration: s.pausedDuration,
+        sessions: s.sessions,
+      }),
+    },
+  ),
+);

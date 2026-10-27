@@ -1,0 +1,93 @@
+import { m } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { SectionLabel } from './SectionLabel';
+import { useWeight } from '@shared/hooks/useWeight';
+import { TrendDown, TrendUp } from '@shared/components/icons';
+
+export interface WeeklyVolumePoint {
+  week: string;
+  vol: number;
+  label: string;
+}
+
+export function WeeklyVolumeChart({
+  data,
+  volumeChange,
+}: {
+  data: WeeklyVolumePoint[];
+  volumeChange: number;
+}) {
+  const { formatVol } = useWeight();
+  const { t } = useTranslation();
+  return (
+    <section className="space-y-3">
+      <SectionLabel>{t('userStats.weekly_volume_title')}</SectionLabel>
+      <m.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="rounded-card p-4 bg-surface"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <TrendUp className="w-4 h-4 text-accent" />
+            <span className="text-sm font-medium text-fg-muted">{t('userStats.last_8_weeks')}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {volumeChange > 0 ? (
+              <TrendUp className="w-3.5 h-3.5 text-success" />
+            ) : (
+              <TrendDown className="w-3.5 h-3.5 text-error" />
+            )}
+            <span
+              className="text-xs font-semibold font-mono"
+              style={{ color: volumeChange >= 0 ? 'var(--success)' : 'var(--error)' }}
+            >
+              {volumeChange > 0 ? '+' : ''}
+              {volumeChange}%
+            </span>
+          </div>
+        </div>
+        <div className="h-[140px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="userStatsGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--interactive-primary)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--interactive-primary)" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <XAxis
+                dataKey="label"
+                tick={{ fill: 'var(--text-tertiary)', fontSize: 9 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis hide domain={[0, 'dataMax + 10']} />
+              <Tooltip
+                contentStyle={{
+                  background: 'var(--bg-surface-3)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: 10,
+                  fontSize: 12,
+                }}
+                formatter={(v) => {
+                  const n = Number(v);
+                  return [n > 0 ? formatVol(n) : '0', 'Volumen'];
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="vol"
+                stroke="var(--interactive-primary)"
+                strokeWidth={2.5}
+                fill="url(#userStatsGrad)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </m.div>
+    </section>
+  );
+}
