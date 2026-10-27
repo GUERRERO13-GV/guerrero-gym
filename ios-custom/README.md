@@ -5,7 +5,7 @@ requiere macOS + Xcode + CocoaPods). Esta carpeta es la **fuente de verdad** del
 código nativo iOS custom y se inyecta en el `ios/` efímero:
 
 - `BiometricPlugin.swift` — plugin Capacitor de biometría (Face ID / Touch ID) con
-  `LocalAuthentication`. Espejo de `android/app/src/main/java/com/franvi/gymlog/BiometricPlugin.kt`
+  `LocalAuthentication`. Espejo de `android/app/src/main/java/com/guerrerogym/app/BiometricPlugin.kt`
   y del contrato `src/shared/lib/biometric.ts`.
 - `BiometricPlugin.m` — bridge ObjC (`CAP_PLUGIN`) que registra el plugin y sus 3 métodos.
 - `HealthBridgePlugin.swift` / `.m` — plugin HealthKit (lectura de pasos, FC, sueño,
@@ -15,7 +15,7 @@ código nativo iOS custom y se inyecta en el `ios/` efímero:
 - `AppIcon-1024.png` — icono de app 1024×1024 **sin canal alfa** (requisito iOS),
   aplanado sobre `#0a0a0b` desde `public/icon-512x512.png`. El CI lo copia sobre el
   `AppIcon.appiconset` del template.
-- `Info.plist.patch.sh` — añade el URL scheme `com.franvi.gymlog` (deep links + OAuth),
+- `Info.plist.patch.sh` — añade el URL scheme `com.guerrerogym.app` (deep links + OAuth),
   `NSFaceIDUsageDescription` y los usage descriptions de HealthKit. Idempotente (`PlistBuddy`).
 - `add-plugin-to-target.rb` — registra los ficheros nativos en el target `App`
   del `.pbxproj` (el template usa file refs explícitas, no synchronized groups).

@@ -40,7 +40,7 @@ pega el UDID, ponle un nombre.
 ## Paso 3 — App ID con HealthKit
 
 **Identifiers → +** → _App IDs_ → _App_ → Bundle ID **explícito**
-`com.franvi.gymlog` → en _Capabilities_ marca **HealthKit** (la app lo requiere en
+`com.guerrerogym.app` → en _Capabilities_ marca **HealthKit** (la app lo requiere en
 `App.entitlements`). Si el App ID ya existe, edítalo y activa HealthKit.
 
 ## Paso 4 — Certificado Apple Distribution (openssl, en Windows)
@@ -49,7 +49,7 @@ pega el UDID, ponle un nombre.
 # 1) Clave privada + CSR (rellena email/CN/país a tu gusto)
 openssl genrsa -out ios_dist.key 2048
 openssl req -new -key ios_dist.key -out ios_dist.csr \
-  -subj "/emailAddress=fvidalmateo@gmail.com/CN=GymLog Distribution/C=ES"
+  -subj "/emailAddress=TU-EMAIL@EJEMPLO.COM/CN=GUERRERO-GYM Distribution/C=ES"
 ```
 
 developer.apple.com → **Certificates → +** → **Apple Distribution** → sube
@@ -67,7 +67,7 @@ openssl pkcs12 -export \
 ## Paso 5 — Perfil de aprovisionamiento ad-hoc
 
 developer.apple.com → **Profiles → +** → **Ad Hoc** (bajo _Distribution_) →
-App ID `com.franvi.gymlog` → el certificado Distribution del paso 4 →
+App ID `com.guerrerogym.app` → el certificado Distribution del paso 4 →
 **selecciona tu dispositivo** (paso 2) → nómbralo (p. ej. `GymLog AdHoc`) →
 descarga `GymLog_AdHoc.mobileprovision`.
 

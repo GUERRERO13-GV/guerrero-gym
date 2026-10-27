@@ -118,7 +118,7 @@ no partíamos de cero:
   FC, sueño, entrenamientos), más `App.entitlements` (capability HealthKit),
   el icono `AppIcon-1024.png`, un script `Info.plist.patch.sh` (añade
   `NSFaceIDUsageDescription`, permisos HealthKit y el URL scheme
-  `com.franvi.gymlog` para OAuth/deep links) y `add-plugin-to-target.rb`
+  `com.guerrerogym.app` para OAuth/deep links) y `add-plugin-to-target.rb`
   (registra los ficheros Swift en el `.pbxproj`).
 - `.github/workflows/ios-build.yml` ya construye, en cada push a `main` o tag
   `v*` (o manualmente), un **IPA sin firmar** en un runner macOS gratuito de

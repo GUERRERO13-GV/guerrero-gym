@@ -1,5 +1,5 @@
 for_platform :android do
-  package_name('com.franvi.gymlog')
+  package_name('com.guerrerogym.app')
 
   # Subida a Play Store: pendiente. Cuando se cree la service account de Google
   # Play, exportar PLAY_STORE_JSON_KEY_PATH y descomentar la línea de abajo.

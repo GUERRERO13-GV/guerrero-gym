@@ -11,7 +11,7 @@ import { useImportRoutineLink } from '../hooks/useImportRoutineLink';
  *
  * Es la pata que hace que un enlace pegado en un chat funcione sin la app
  * instalada: se abre en el navegador, la rutina se importa igual y el usuario
- * acaba en su lista. El enlace nativo (`com.franvi.gymlog://routine?d=…`) no
+ * acaba en su lista. El enlace nativo (`com.guerrerogym.app://routine?d=…`) no
  * pasa por aquí, lo atrapa `App` en el `appUrlOpen`; pero los dos leen el mismo
  * parámetro con la misma función, así que no pueden divergir.
  */

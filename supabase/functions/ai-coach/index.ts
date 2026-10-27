@@ -53,7 +53,7 @@ const logMetric = (payload: Record<string, unknown>) => console.log(JSON.stringi
 
 /**
  * Normaliza un origen para comparar sin sustos: espacios, mayúsculas y barra
- * final. Un `https://App.GymLog.dpdns.org/` copiado del navegador debe casar
+ * final. Un `https://MiApp.Ejemplo.com/` copiado del navegador debe casar
  * con lo que hay en la variable de entorno.
  */
 const normalizeOrigin = (o: string) => o.trim().toLowerCase().replace(/\/+$/, '');

@@ -128,10 +128,10 @@ export default defineConfig(({ mode }) => {
           brotliSize: true,
         }),
       // Sube source maps a Sentry solo si hay token (no bloquea builds locales/CI sin él).
-      sentryAuthToken &&
+      (sentryAuthToken && env.SENTRY_ORG && env.SENTRY_PROJECT) &&
         sentryVitePlugin({
-          org: 'franvi',
-          project: 'capacitor',
+          org: env.SENTRY_ORG,
+          project: env.SENTRY_PROJECT,
           authToken: sentryAuthToken,
           sourcemaps: {
             // Sin esto, los .map quedan en dist/ y Vercel los serviría en

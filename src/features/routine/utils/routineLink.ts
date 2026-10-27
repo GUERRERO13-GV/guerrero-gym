@@ -16,17 +16,20 @@
 import { buildSharedRoutine, parseSharedRoutine, type SharedRoutine } from './shareRoutine';
 import type { Routine } from '@features/routine/stores/routineStore';
 
-/** Host del enlace con esquema propio: `com.franvi.gymlog://routine?d=…`. */
+/** Host del enlace con esquema propio: `com.guerrerogym.app://routine?d=…`. */
 export const ROUTINE_LINK_HOST = 'routine';
 
 /**
- * Base del enlace web: `https://app.gymlog.dpdns.org/r?d=…`.
+ * Base del enlace web: `<tu-dominio>/r?d=…`. Se define con VITE_WEB_ORIGIN
+ * (tu URL de despliegue); si falta, se usa el origen desde el que corre la app.
  *
- * Se usa `https` (y no solo el esquema propio) porque un `com.franvi.gymlog://`
+ * Se usa `https` (y no solo el esquema propio) porque un `com.guerrerogym.app://`
  * pegado en un chat no es pulsable en la mayoría de mensajeros. El enlace https
  * al menos abre la app web, que sabe importar la rutina igual.
  */
-export const ROUTINE_WEB_ORIGIN = 'https://app.gymlog.dpdns.org';
+export const ROUTINE_WEB_ORIGIN: string =
+  import.meta.env.VITE_WEB_ORIGIN ||
+  (typeof window !== 'undefined' ? window.location.origin : 'https://localhost');
 /** Ruta corta del importador web. */
 export const ROUTINE_WEB_PATH = '/r';
 
@@ -77,7 +80,7 @@ export function decodeRoutineParam(valor: string | null | undefined): SharedRout
 
 /** Enlace con esquema propio, el que abre la app instalada. */
 export function buildRoutineAppLink(routine: Routine, now?: Date): string {
-  return `com.franvi.gymlog://${ROUTINE_LINK_HOST}?${PARAM}=${encodeRoutineParam(routine, now)}`;
+  return `com.guerrerogym.app://${ROUTINE_LINK_HOST}?${PARAM}=${encodeRoutineParam(routine, now)}`;
 }
 
 /** Enlace https, el que se puede pegar en un chat y abrir en cualquier navegador. */
@@ -94,7 +97,7 @@ export function buildRoutineShareText(routine: Routine, now?: Date): string {
  * Saca la rutina de una URL entrante (esquema propio o enlace web).
  *
  * Acepta las dos formas para que el mismo manejador sirva al `appUrlOpen` nativo
- * y a la ruta web `/r`: `com.franvi.gymlog://routine?d=…` y
+ * y a la ruta web `/r`: `com.guerrerogym.app://routine?d=…` y
  * `https://…/r?d=…`. Cualquier otra cosa devuelve `null`.
  */
 export function routineFromUrl(url: string): SharedRoutine | null {
@@ -105,7 +108,7 @@ export function routineFromUrl(url: string): SharedRoutine | null {
     return null;
   }
 
-  const esEsquemaPropio = parseada.protocol === 'com.franvi.gymlog:';
+  const esEsquemaPropio = parseada.protocol === 'com.guerrerogym.app:';
   const esRutaWeb = parseada.pathname === ROUTINE_WEB_PATH;
 
   if (esEsquemaPropio) {

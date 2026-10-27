@@ -343,7 +343,7 @@ al leer rompería exactamente eso.
 - [x] V.2 `audit:contrast` — 104 comprobaciones, 24 acentos × 2 temas, todo en
       verde. Peor caso de texto 4,790:1 en oscuro y 4,824:1 en claro.
 - [x] V.3 Recorrido entero en la **APK sobre el emulador** (`emulator-5554`,
-      `com.franvi.gymlog.fitbody`). **Encontró cuatro fallos que ni los 776 tests
+      `com.guerrerogym.app.fitbody`). **Encontró cuatro fallos que ni los 776 tests
       ni Playwright habían visto**, y ese es exactamente el motivo de que esta
       comprobación estuviera en la lista. Ver abajo.
 

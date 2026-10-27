@@ -9,9 +9,9 @@
         android:shortcutDisabledMessage="@string/shortcut_disabled_message">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.franvi.gymlog"
-            android:targetClass="com.franvi.gymlog.MainActivity"
-            android:data="com.franvi.gymlog://workout/new" />
+            android:targetPackage="com.guerrerogym.app"
+            android:targetClass="com.guerrerogym.app.MainActivity"
+            android:data="com.guerrerogym.app://workout/new" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
     <shortcut
@@ -23,9 +23,9 @@
         android:shortcutDisabledMessage="@string/shortcut_disabled_message">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.franvi.gymlog"
-            android:targetClass="com.franvi.gymlog.MainActivity"
-            android:data="com.franvi.gymlog://history" />
+            android:targetPackage="com.guerrerogym.app"
+            android:targetClass="com.guerrerogym.app.MainActivity"
+            android:data="com.guerrerogym.app://history" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 </shortcuts>

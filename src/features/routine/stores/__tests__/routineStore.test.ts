@@ -685,11 +685,11 @@ describe('ocultar plantillas del selector', () => {
   });
 
   it('ocultar la rutina activa no la interrumpe', () => {
-    useRoutineStore.getState().setActiveRoutine('franvi');
+    useRoutineStore.getState().setActiveRoutine('pivote-5dias');
 
-    useRoutineStore.getState().hideRoutine('franvi');
+    useRoutineStore.getState().hideRoutine('pivote-5dias');
 
-    expect(useRoutineStore.getState().getActiveRoutine()?.id).toBe('franvi');
+    expect(useRoutineStore.getState().getActiveRoutine()?.id).toBe('pivote-5dias');
   });
 
   it('es reversible y no duplica ids', () => {

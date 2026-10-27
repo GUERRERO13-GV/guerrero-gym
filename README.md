@@ -6,6 +6,8 @@ Diario de entrenamiento (fuerza + cardio, estadísticas, rutinas, offline-first)
 - **Color a elegir**: Ajustes → Preferencias → *Color de acento* (24 colores, con variante clara y oscura).
 - **Mi rutina**: Ajustes → *Mi rutina*. Cada persona pone su rutina semanal (día, ejercicios, series y reps) y la modifica cuando quiera.
 
+> **Empieza por [`PASO-A-PASO.md`](PASO-A-PASO.md)**: Supabase, entrar con Google, GitHub, Vercel y Android.
+
 ## Puesta en marcha
 
 ```bash

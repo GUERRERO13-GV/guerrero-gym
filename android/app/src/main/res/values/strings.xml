@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">GymLog FitBody</string>
     <string name="title_activity_main">GymLog FitBody</string>
-    <string name="package_name">com.franvi.gymlog</string>
-    <string name="custom_url_scheme">com.franvi.gymlog</string>
+    <string name="package_name">com.guerrerogym.app</string>
+    <string name="custom_url_scheme">com.guerrerogym.app</string>
     <string name="shortcut_new_workout_short">Nuevo Entreno</string>
     <string name="shortcut_new_workout_long">Registrar nuevo entrenamiento</string>
     <string name="shortcut_stats_short">Estadísticas</string>

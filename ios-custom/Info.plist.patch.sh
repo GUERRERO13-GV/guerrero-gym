@@ -2,7 +2,7 @@
 # Idempotent PlistBuddy patch for the generated iOS app Info.plist.
 # Adds:
 #   - NSFaceIDUsageDescription (required, or the app crashes on Face ID use)
-#   - CFBundleURLTypes with custom scheme com.franvi.gymlog (OAuth callback + deep links,
+#   - CFBundleURLTypes with custom scheme com.guerrerogym.app (OAuth callback + deep links,
 #     parity with the Android intent-filter)
 #
 # Usage: bash ios-custom/Info.plist.patch.sh [path/to/Info.plist]
@@ -11,7 +11,7 @@ set -euo pipefail
 
 PLIST="${1:-ios/App/App/Info.plist}"
 PB=/usr/libexec/PlistBuddy
-SCHEME="com.franvi.gymlog"
+SCHEME="com.guerrerogym.app"
 
 if [ ! -f "$PLIST" ]; then
   echo "Info.plist not found at $PLIST" >&2

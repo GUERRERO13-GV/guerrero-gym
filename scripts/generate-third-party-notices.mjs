@@ -359,7 +359,7 @@ function build() {
     '---------------------------------------',
     'Este fichero está accesible en la app (Ajustes → Privacidad y datos →',
     'Licencias de terceros) y en la web (/third-party-notices.txt). Para cualquier',
-    'corrección de atribución: fvidalmateo@gmail.com.',
+    'corrección de atribución: TU-EMAIL@EJEMPLO.COM.',
     '',
     'Esta lista es un inventario técnico, no un dictamen jurídico.',
     '',

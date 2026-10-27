@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signInWithGoogle: async () => {
     const isNative = Capacitor.isNativePlatform();
     const redirectTo = isNative
-      ? 'com.franvi.gymlog://auth/callback'
+      ? 'com.guerrerogym.app://auth/callback'
       : `${window.location.origin}/auth/callback`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({

@@ -18,7 +18,7 @@
   <string>manual</string>
   <key>provisioningProfiles</key>
   <dict>
-    <key>com.franvi.gymlog</key>
+    <key>com.guerrerogym.app</key>
     <string>__PROFILE_NAME__</string>
   </dict>
   <key>compileBitcode</key>

@@ -446,8 +446,8 @@ function AppRoutes() {
         );
       }
 
-      // 1. Manejar Shortcuts (com.franvi.gymlog://...)
-      if (url.protocol === 'com.franvi.gymlog:') {
+      // 1. Manejar Shortcuts (com.guerrerogym.app://...)
+      if (url.protocol === 'com.guerrerogym.app:') {
         if (import.meta.env.DEV) devLog('[DeepLink] Custom protocol, host:', url.hostname);
         if (url.hostname === 'workout' && url.pathname === '/new') {
           navigate('/', { replace: true });

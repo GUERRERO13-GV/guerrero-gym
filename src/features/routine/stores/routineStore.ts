@@ -881,8 +881,8 @@ export const PREDEFINED_ROUTINES: Routine[] = [
     },
   },
   {
-    id: 'franvi',
-    // El id se queda en 'franvi' a propósito: es la clave con la que las rutinas
+    id: 'pivote-5dias',
+    // El id se queda en 'pivote-5dias' a propósito: es la clave con la que las rutinas
     // ya clonadas se emparejan con la plantilla. Cambiarlo convertiría en
     // huérfanas las copias que la gente tenga guardadas.
     name: 'Pivote — 5 días',

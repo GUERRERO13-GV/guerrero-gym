@@ -18,10 +18,10 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.franvi.gymlog"
+    namespace = "com.guerrerogym.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.franvi.gymlog"
+        applicationId "com.guerrerogym.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode appVersionCode
@@ -50,13 +50,13 @@ android {
         }
         debug {
             // Variante de prueba: sufijo propio para que se instale JUNTO a la app
-            // real (com.franvi.gymlog) sin sobrescribirla. El namespace (paquete
-            // Java) sigue siendo com.franvi.gymlog, y el esquema del deep link del
+            // real (com.guerrerogym.app) sin sobrescribirla. El namespace (paquete
+            // Java) sigue siendo com.guerrerogym.app, y el esquema del deep link del
             // manifest es literal, así que no le afecta.
             //
             // Va en `debug` y no en `defaultConfig`: ahí aplicaba TAMBIÉN a
             // release, así que cada APK de publicación salía como
-            // com.franvi.gymlog.fitbody y no actualizaba a nadie. Había que
+            // com.guerrerogym.app.fitbody y no actualizaba a nadie. Había que
             // quitarlo a mano en cada release y volver a ponerlo. El CI compila
             // assembleDebug, así que para él nada cambia.
             applicationIdSuffix ".fitbody"
